@@ -1,0 +1,4 @@
+.*exe
+out
+internal/database
+.env

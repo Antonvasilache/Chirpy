@@ -1,33 +1,54 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
-	"sync/atomic"
+	"os"
+
+	"github.com/Antonvasilache/Chirpy/internal/database"
+	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 )
 
-type apiConfig struct {
-	fileserverHits atomic.Int32
-}
+
 
 func main(){
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	dbURL := os.Getenv("DB_URL")
+	db, err := sql.Open("postgres", dbURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+	dbQueries := database.New(db)
+
+	
 	mux := http.NewServeMux()
 	server := &http.Server{
 		Handler: mux,
 		Addr: ":8080",
 	}
 
-	apiCfg := &apiConfig{}
+	apiCfg := &apiConfig{
+		Queries: dbQueries,
+		PLATFORM: os.Getenv("PLATFORM"),
+	}
 		
 	fileServer := http.FileServer(http.Dir("."))
 	stripPrefixHandler := http.StripPrefix("/app/", fileServer)
 
 	mux.Handle("/app/", apiCfg.middlewareMetricsInc(stripPrefixHandler))
-	mux.HandleFunc("/healthz", readyHandler)
-	mux.HandleFunc("/metrics", apiCfg.metricsHandler)
-	mux.HandleFunc("/reset", apiCfg.resetHandler)
+	mux.HandleFunc("GET /api/healthz", readyHandler)
+	mux.HandleFunc("GET /admin/metrics", apiCfg.metricsHandler)
+	mux.HandleFunc("POST /admin/reset", apiCfg.resetHandler)
+	mux.HandleFunc("POST /api/users", apiCfg.createUserHandler)
+	mux.HandleFunc("POST /api/validate_chirp", apiCfg.validateHandler)
 
-	err := server.ListenAndServe()
+	err = server.ListenAndServe()
 	if err != nil {
 		log.Fatal(err)
 	}
