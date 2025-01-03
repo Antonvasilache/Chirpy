@@ -31,3 +31,10 @@ func cleanBody(body string) string{
 	cleaned_body := strings.Join(words, " ")
 	return cleaned_body
 }
+
+func (cfg *apiConfig) middlewareMetricsInc(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
+		cfg.fileserverHits.Add(1)
+		next.ServeHTTP(w, r)
+	})
+}

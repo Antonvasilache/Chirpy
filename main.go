@@ -43,10 +43,12 @@ func main(){
 
 	mux.Handle("/app/", apiCfg.middlewareMetricsInc(stripPrefixHandler))
 	mux.HandleFunc("GET /api/healthz", readyHandler)
+	mux.HandleFunc("GET /api/chirps", apiCfg.getChirps)
 	mux.HandleFunc("GET /admin/metrics", apiCfg.metricsHandler)
 	mux.HandleFunc("POST /admin/reset", apiCfg.resetHandler)
 	mux.HandleFunc("POST /api/users", apiCfg.createUserHandler)
 	mux.HandleFunc("POST /api/chirps", apiCfg.createChirp)
+	
 
 	err = server.ListenAndServe()
 	if err != nil {
@@ -54,9 +56,3 @@ func main(){
 	}
 }
 
-func (cfg *apiConfig) middlewareMetricsInc(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
-		cfg.fileserverHits.Add(1)
-		next.ServeHTTP(w, r)
-	})
-}
