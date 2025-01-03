@@ -4,9 +4,12 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+
+	"github.com/Antonvasilache/Chirpy/internal/database"
+	"github.com/google/uuid"
 )
 
-func (cfg *apiConfig) validateHandler(w http.ResponseWriter, r *http.Request){
+func (cfg *apiConfig) createChirp(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
 
 	decoder := json.NewDecoder(r.Body)
@@ -25,6 +28,27 @@ func (cfg *apiConfig) validateHandler(w http.ResponseWriter, r *http.Request){
 
 	cleaned_body := cleanBody(params.Body)
 
-	responseHelper(w, 200, validResponse{Cleaned_body: cleaned_body})
+	chirp_id := uuid.New()
+
+	databaseChirp, err := cfg.Queries.CreateChirp(r.Context(), database.CreateChirpParams{
+		ID: chirp_id,
+		Body: cleaned_body,
+		UserID: params.UserID,
+	})
+	if err != nil {
+		log.Printf("Could not create chirp: %s", err)
+		responseHelper(w, 400, errorResponse{Error: "Error. Please try again later"})
+		return
+	}
+
+	response := ChirpResponse{
+		ID: databaseChirp.ID,
+		CreatedAt: databaseChirp.CreatedAt,
+		UpdatedAt: databaseChirp.UpdatedAt,
+		Body: databaseChirp.Body,
+		UserID: databaseChirp.UserID,
+	}
+
+	responseHelper(w, 201, response)
 }
 

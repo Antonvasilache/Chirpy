@@ -10,14 +10,11 @@ import (
 
 type parameters struct {
 	Body string `json:"body"`
+	UserID uuid.UUID `json:"user_id"`
 }
 
 type errorResponse struct {
 	Error string `json:"error"`
-}
-
-type validResponse struct {
-	Cleaned_body string `json:"cleaned_body"`
 }
 
 type createUserRequest struct {
@@ -35,4 +32,12 @@ type User struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 	Email     string    `json:"email"`
+}
+
+type ChirpResponse struct{
+	ID        uuid.UUID `json:"id"`
+    CreatedAt time.Time `json:"created_at"`
+    UpdatedAt time.Time `json:"updated_at"`
+    Body      string    `json:"body"`
+    UserID    uuid.UUID `json:"user_id"`
 }
