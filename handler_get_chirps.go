@@ -27,5 +27,5 @@ func (cfg *apiConfig) getChirps(w http.ResponseWriter, r *http.Request){
 		response[index] = chirp
 	}
 
-	responseHelper(w, 200, response)
+	responseHelper(w, 200, response)	
 }
