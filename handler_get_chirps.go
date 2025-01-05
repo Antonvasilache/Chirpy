@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 	"net/http"
+
+	"github.com/Antonvasilache/Chirpy/internal/helpers"
 )
 
 func (cfg *apiConfig) getChirps(w http.ResponseWriter, r *http.Request){
@@ -11,7 +13,7 @@ func (cfg *apiConfig) getChirps(w http.ResponseWriter, r *http.Request){
 	databaseChirps, err := cfg.Queries.GetChirps(r.Context())
 	if err != nil {
 		log.Printf("Could not retrieve users: %s", err)
-		responseHelper(w, 400, errorResponse{Error: "Error. Please try again later"})
+		helpers.ResponseHelper(w, 400, errorResponse{Error: "Error. Please try again later"})
 		return
 	}
 
@@ -27,5 +29,5 @@ func (cfg *apiConfig) getChirps(w http.ResponseWriter, r *http.Request){
 		response[index] = chirp
 	}
 
-	responseHelper(w, 200, response)	
+	helpers.ResponseHelper(w, 200, response)	
 }

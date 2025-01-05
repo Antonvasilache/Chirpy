@@ -1,4 +1,4 @@
-package main
+package helpers
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func responseHelper(w http.ResponseWriter, code int, payload interface{}){	
+func ResponseHelper(w http.ResponseWriter, code int, payload interface{}){	
 	data, err := json.Marshal(payload)
 		if err != nil {
 			log.Printf("error marshalling response: %s", err)
@@ -18,7 +18,7 @@ func responseHelper(w http.ResponseWriter, code int, payload interface{}){
 		w.Write(data)
 }
 
-func cleanBody(body string) string{
+func CleanBody(body string) string{
 	words := strings.Split(body, " ")
 	for index, word := range words {
 		word_to_lower := strings.ToLower(word)
@@ -32,9 +32,4 @@ func cleanBody(body string) string{
 	return cleaned_body
 }
 
-func (cfg *apiConfig) middlewareMetricsInc(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
-		cfg.fileserverHits.Add(1)
-		next.ServeHTTP(w, r)
-	})
-}
+

@@ -17,7 +17,8 @@ type errorResponse struct {
 	Error string `json:"error"`
 }
 
-type createUserRequest struct {
+type userCredentials struct {
+	Password string `json:"password"`
 	Email string `json:"email"`
 }
 

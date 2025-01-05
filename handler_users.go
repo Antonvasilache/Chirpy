@@ -5,28 +5,43 @@ import (
 	"log"
 	"net/http"
 	"strings"
+
+	"github.com/Antonvasilache/Chirpy/internal/auth"
+	"github.com/Antonvasilache/Chirpy/internal/database"
+	"github.com/Antonvasilache/Chirpy/internal/helpers"
 )
 
 func (cfg *apiConfig) createUserHandler(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
 
 	decoder := json.NewDecoder(r.Body)
-	email := createUserRequest{}
-	err := decoder.Decode(&email)
+	userRequest := userCredentials{}
+	err := decoder.Decode(&userRequest)
 	if err != nil {
 		log.Printf("Error decoding user data: %s", err)
-		responseHelper(w, 400, errorResponse{Error: err.Error()})
+		
+		helpers.ResponseHelper(w, 400, errorResponse{Error: err.Error()})
 		return
 	}
 
-	databaseUser, err := cfg.Queries.CreateUser(r.Context(), email.Email)
+	hashedPassword, err := auth.HashPassword(userRequest.Password)
+	if err != nil {
+		log.Printf("Error hashing password: %s", err)
+		helpers.ResponseHelper(w, 500, errorResponse{Error: "Internal server error"})
+		return
+	}
+
+	databaseUser, err := cfg.Queries.CreateUser(r.Context(), database.CreateUserParams{
+		Email: userRequest.Email,
+		HashedPassword: hashedPassword,
+	})
 	if err != nil {
 		log.Printf("Could not create user: %s", err)
 		switch {		
 		case strings.Contains(err.Error(), "duplicate key"):
-			responseHelper(w, 409, errorResponse{Error: "Email already exists"})
+			helpers.ResponseHelper(w, 409, errorResponse{Error: "Email already exists"})
 		default:
-			responseHelper(w, 500, errorResponse{Error: "Internal server error"})
+			helpers.ResponseHelper(w, 500, errorResponse{Error: "Internal server error"})
 		}		
 		return
 	}
@@ -38,5 +53,5 @@ func (cfg *apiConfig) createUserHandler(w http.ResponseWriter, r *http.Request){
 		Email: databaseUser.Email,
 	}
 
-	responseHelper(w, 201, user)	
+	helpers.ResponseHelper(w, 201, user)	
 }

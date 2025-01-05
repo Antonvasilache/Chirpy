@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/Antonvasilache/Chirpy/internal/helpers"
 	"github.com/google/uuid"
 )
 
@@ -19,7 +20,7 @@ func (cfg *apiConfig) getChirp(w http.ResponseWriter, r *http.Request){
 	databaseChirp, err := cfg.Queries.GetChirpById(r.Context(), chirpID)
 	if err != nil {
 		log.Printf("Could not retrieve chirp: %s", err)
-		responseHelper(w, 404, errorResponse{Error: "Error. Chirp was not found"})
+		helpers.ResponseHelper(w, 404, errorResponse{Error: "Error. Chirp was not found"})
 		return
 	}
 
@@ -31,5 +32,5 @@ func (cfg *apiConfig) getChirp(w http.ResponseWriter, r *http.Request){
 		UserID: databaseChirp.UserID,
 	}
 
-	responseHelper(w, 200, response)
+	helpers.ResponseHelper(w, 200, response)
 }

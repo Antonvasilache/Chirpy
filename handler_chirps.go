@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/Antonvasilache/Chirpy/internal/database"
+	"github.com/Antonvasilache/Chirpy/internal/helpers"
 	"github.com/google/uuid"
 )
 
@@ -17,16 +18,16 @@ func (cfg *apiConfig) createChirp(w http.ResponseWriter, r *http.Request){
 	err := decoder.Decode(&params)
 	if err != nil {
 		log.Printf("Error decoding parameters: %s", err)	
-		responseHelper(w, 400, errorResponse{Error: err.Error()})
+		helpers.ResponseHelper(w, 400, errorResponse{Error: err.Error()})
 		return
 	}
 
 	if len(params.Body) > 140 {
-		responseHelper(w, 400, errorResponse{Error: "Chirp is too long"})
+		helpers.ResponseHelper(w, 400, errorResponse{Error: "Chirp is too long"})
 		return
 	}
 
-	cleaned_body := cleanBody(params.Body)
+	cleaned_body := helpers.CleanBody(params.Body)
 
 	chirp_id := uuid.New()
 
@@ -37,7 +38,7 @@ func (cfg *apiConfig) createChirp(w http.ResponseWriter, r *http.Request){
 	})
 	if err != nil {
 		log.Printf("Could not create chirp: %s", err)
-		responseHelper(w, 400, errorResponse{Error: "Error. Please try again later"})
+		helpers.ResponseHelper(w, 400, errorResponse{Error: "Error. Please try again later"})
 		return
 	}
 
@@ -49,6 +50,6 @@ func (cfg *apiConfig) createChirp(w http.ResponseWriter, r *http.Request){
 		UserID: databaseChirp.UserID,
 	}
 
-	responseHelper(w, 201, response)
+	helpers.ResponseHelper(w, 201, response)
 }
 
