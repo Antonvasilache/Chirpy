@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/Antonvasilache/Chirpy/internal/auth"
 	"github.com/Antonvasilache/Chirpy/internal/database"
 	"github.com/Antonvasilache/Chirpy/internal/helpers"
 	"github.com/google/uuid"
@@ -22,6 +23,19 @@ func (cfg *apiConfig) createChirp(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
+	//authenticate user
+	tokenString, err := auth.GetBearerToken(r.Header)
+	if err != nil {
+		log.Printf("Could not retrieve bearer token :%s", err)
+		helpers.ResponseHelper(w, 500, errorResponse{Error: "Internal server error"})
+		return
+	}
+	userID, err := auth.ValidateJWT(tokenString, cfg.JWTSECRET)
+	if err != nil {
+		log.Printf("Could not validate token :%s", err)
+		helpers.ResponseHelper(w, 401, errorResponse{Error: "Unauthorized"})
+	}
+
 	if len(params.Body) > 140 {
 		helpers.ResponseHelper(w, 400, errorResponse{Error: "Chirp is too long"})
 		return
@@ -34,7 +48,7 @@ func (cfg *apiConfig) createChirp(w http.ResponseWriter, r *http.Request){
 	databaseChirp, err := cfg.Queries.CreateChirp(r.Context(), database.CreateChirpParams{
 		ID: chirp_id,
 		Body: cleaned_body,
-		UserID: params.UserID,
+		UserID: userID,
 	})
 	if err != nil {
 		log.Printf("Could not create chirp: %s", err)

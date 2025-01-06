@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/Antonvasilache/Chirpy/internal/auth"
 	"github.com/Antonvasilache/Chirpy/internal/helpers"
@@ -35,11 +36,24 @@ func (cfg *apiConfig) loginHandler (w http.ResponseWriter, r *http.Request){
 		return
 	}
 
+	expirationTime := time.Hour
+	if loginRequest.ExpiresInSeconds != nil && *loginRequest.ExpiresInSeconds < 3600 {
+		expirationTime = time.Duration(*loginRequest.ExpiresInSeconds) * time.Second
+	}
+
+	token, err := auth.MakeJWT(databaseUser.ID, cfg.JWTSECRET, expirationTime)
+	if err != nil {
+		log.Printf("Could not create JWT Token: %s", err)
+		helpers.ResponseHelper(w, 500, errorResponse{Error: "Internal server error"})
+		return
+	}
+
 	user := User{
 		ID: databaseUser.ID,
 		CreatedAt: databaseUser.CreatedAt,
 		UpdatedAt: databaseUser.UpdatedAt,
 		Email: databaseUser.Email,
+		Token: token,
 	}
 
 	helpers.ResponseHelper(w, 200, user)	

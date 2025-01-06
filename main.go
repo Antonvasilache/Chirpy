@@ -36,6 +36,7 @@ func main(){
 	apiCfg := &apiConfig{
 		Queries: dbQueries,
 		PLATFORM: os.Getenv("PLATFORM"),
+		JWTSECRET: os.Getenv("JWT_SECRET"),
 	}
 		
 	fileServer := http.FileServer(http.Dir("."))
