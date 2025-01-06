@@ -18,8 +18,7 @@ func (cfg *apiConfig) createUserHandler(w http.ResponseWriter, r *http.Request){
 	userRequest := userCredentials{}
 	err := decoder.Decode(&userRequest)
 	if err != nil {
-		log.Printf("Error decoding user data: %s", err)
-		
+		log.Printf("Error decoding user data: %s", err)		
 		helpers.ResponseHelper(w, 400, errorResponse{Error: err.Error()})
 		return
 	}

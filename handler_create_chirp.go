@@ -34,6 +34,7 @@ func (cfg *apiConfig) createChirp(w http.ResponseWriter, r *http.Request){
 	if err != nil {
 		log.Printf("Could not validate token :%s", err)
 		helpers.ResponseHelper(w, 401, errorResponse{Error: "Unauthorized"})
+		return
 	}
 
 	if len(params.Body) > 140 {

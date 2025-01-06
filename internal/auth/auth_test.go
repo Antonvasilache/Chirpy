@@ -3,7 +3,6 @@ package auth_test
 import (
 	"net/http"
 	"testing"
-	"time"
 
 	"github.com/Antonvasilache/Chirpy/internal/auth"
 	"github.com/google/uuid"
@@ -14,7 +13,7 @@ func TestMakeJWTAndValidate(t *testing.T){
 	userID := uuid.New()
 
 	//Create JWT with a 1-hour expiration
-	jwt, err := auth.MakeJWT(userID, tokenSecret, time.Hour)
+	jwt, err := auth.MakeJWT(userID, tokenSecret)
 	if err != nil {
 		t.Fatalf("Unexpected error creating JWT: %v", err)
 	}
@@ -30,30 +29,13 @@ func TestMakeJWTAndValidate(t *testing.T){
 	}
 }
 
-func TestValidateJWTExpired(t *testing.T){
-	tokenSecret := "secret"
-	userID := uuid.New()
-
-	//Create JWT with a past expiration date
-	jwt, err := auth.MakeJWT(userID, tokenSecret, -time.Hour)
-	if err != nil {
-		t.Fatalf("Unexpected error creating JWT: %v", err)
-	}
-
-	//Attempt to validate the expired JWT
-	_, err = auth.ValidateJWT(jwt, tokenSecret)
-	if err == nil {
-		t.Error("Expected error for expired JWT, got nil")
-	}
-}
-
 func TestValidateJWTWithWrongSecret(t *testing.T){
 	tokenSecret := "secret"
 	wrongSecret := "wrongsecret"
 	userID := uuid.New()
 
 	//Create JWT
-	jwt, err := auth.MakeJWT(userID, tokenSecret, time.Hour)
+	jwt, err := auth.MakeJWT(userID, tokenSecret)
 	if err != nil {
 		t.Fatalf("Unexpected error creating JWT: %v", err)
 	}

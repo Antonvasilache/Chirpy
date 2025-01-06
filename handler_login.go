@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Antonvasilache/Chirpy/internal/auth"
+	"github.com/Antonvasilache/Chirpy/internal/database"
 	"github.com/Antonvasilache/Chirpy/internal/helpers"
 )
 
@@ -34,16 +35,29 @@ func (cfg *apiConfig) loginHandler (w http.ResponseWriter, r *http.Request){
 		log.Printf("Incorrect password: %s", err)
 		helpers.ResponseHelper(w, 401, errorResponse{Error: "Incorrect email or password"})
 		return
-	}
+	}	
 
-	expirationTime := time.Hour
-	if loginRequest.ExpiresInSeconds != nil && *loginRequest.ExpiresInSeconds < 3600 {
-		expirationTime = time.Duration(*loginRequest.ExpiresInSeconds) * time.Second
-	}
-
-	token, err := auth.MakeJWT(databaseUser.ID, cfg.JWTSECRET, expirationTime)
+	token, err := auth.MakeJWT(databaseUser.ID, cfg.JWTSECRET)
 	if err != nil {
 		log.Printf("Could not create JWT Token: %s", err)
+		helpers.ResponseHelper(w, 500, errorResponse{Error: "Internal server error"})
+		return
+	}
+
+	refreshToken, err := auth.MakeRefreshToken()
+	if err != nil {
+		log.Printf("Could not create refresh Token: %s", err)
+		helpers.ResponseHelper(w, 500, errorResponse{Error: "Internal server error"})
+		return
+	}
+	expirationDate := time.Now().UTC().Add(60 * 24 * time.Hour)
+	_, err = cfg.Queries.CreateRefreshToken(r.Context(), database.CreateRefreshTokenParams{
+		Token: refreshToken,
+		UserID: databaseUser.ID,
+		ExpiresAt: expirationDate,
+	})
+	if err != nil {
+		log.Printf("Could not create refresh token: %s", err)
 		helpers.ResponseHelper(w, 500, errorResponse{Error: "Internal server error"})
 		return
 	}
@@ -54,6 +68,7 @@ func (cfg *apiConfig) loginHandler (w http.ResponseWriter, r *http.Request){
 		UpdatedAt: databaseUser.UpdatedAt,
 		Email: databaseUser.Email,
 		Token: token,
+		RefreshToken: refreshToken,
 	}
 
 	helpers.ResponseHelper(w, 200, user)	
