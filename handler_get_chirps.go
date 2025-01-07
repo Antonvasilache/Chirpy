@@ -4,18 +4,33 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/Antonvasilache/Chirpy/internal/database"
 	"github.com/Antonvasilache/Chirpy/internal/helpers"
+	"github.com/google/uuid"
 )
 
 func (cfg *apiConfig) getChirps(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")	
 
-	databaseChirps, err := cfg.Queries.GetChirps(r.Context())
+	authorIDStr := r.URL.Query().Get("author_id")
+	authorID, err := uuid.Parse(authorIDStr)
+	if err != nil {
+		http.Error(w, "Invalid author ID format", http.StatusBadRequest)
+		return
+	}
+
+	var databaseChirps []database.Chirp
+	if authorIDStr != "" {
+		databaseChirps, err = cfg.Queries.GetChirpsByUserId(r.Context(), authorID)		
+	} else {
+		databaseChirps, err = cfg.Queries.GetChirps(r.Context())
+	}
 	if err != nil {
 		log.Printf("Could not retrieve users: %s", err)
 		helpers.ResponseHelper(w, 400, errorResponse{Error: "Error. Please try again later"})
 		return
 	}
+		
 
 	response := make([]ChirpResponse, len(databaseChirps))
 	for index, dbChirp := range databaseChirps {
