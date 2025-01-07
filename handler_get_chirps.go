@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"sort"
 
 	"github.com/Antonvasilache/Chirpy/internal/database"
 	"github.com/Antonvasilache/Chirpy/internal/helpers"
@@ -14,7 +15,7 @@ func (cfg *apiConfig) getChirps(w http.ResponseWriter, r *http.Request){
 
 	authorIDStr := r.URL.Query().Get("author_id")
 	authorID, err := uuid.Parse(authorIDStr)
-	if err != nil {
+	if authorIDStr != "" && err != nil {
 		http.Error(w, "Invalid author ID format", http.StatusBadRequest)
 		return
 	}
@@ -30,7 +31,14 @@ func (cfg *apiConfig) getChirps(w http.ResponseWriter, r *http.Request){
 		helpers.ResponseHelper(w, 400, errorResponse{Error: "Error. Please try again later"})
 		return
 	}
-		
+
+	//sorting chirps
+	sortParam := r.URL.Query().Get("sort")
+	if sortParam == "desc" {
+		sort.Slice(databaseChirps, func(i, j int) bool {
+			return databaseChirps[i].CreatedAt.After(databaseChirps[j].CreatedAt)
+		})
+	}		
 
 	response := make([]ChirpResponse, len(databaseChirps))
 	for index, dbChirp := range databaseChirps {
