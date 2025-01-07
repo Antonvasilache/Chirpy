@@ -36,6 +36,7 @@ func main(){
 	apiCfg := &apiConfig{
 		Queries: dbQueries,
 		PLATFORM: os.Getenv("PLATFORM"),
+		POLKAKEY: os.Getenv("POLKA_KEY"),
 		JWTSECRET: os.Getenv("JWT_SECRET"),
 	}
 		

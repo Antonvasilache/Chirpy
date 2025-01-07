@@ -26,6 +26,7 @@ type apiConfig struct {
 	Queries *database.Queries
 	PLATFORM string
 	JWTSECRET string
+	POLKAKEY string
 }
 
 type User struct {

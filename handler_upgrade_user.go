@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/Antonvasilache/Chirpy/internal/auth"
 	"github.com/Antonvasilache/Chirpy/internal/helpers"
 	"github.com/google/uuid"
 )
@@ -14,9 +15,16 @@ import (
 func (cfg *apiConfig) upgradeUser(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
 
+	apiString, err := auth.GetAPIKey(r.Header)
+	if err != nil || apiString != cfg.POLKAKEY{
+		log.Printf("Could not retrieve api key :%s", err)
+		helpers.ResponseHelper(w, 401, errorResponse{Error: "Unauthorized"})
+		return
+	}	
+
 	decoder := json.NewDecoder(r.Body)
 	data := WebhookRequest{}
-	err := decoder.Decode(&data)
+	err = decoder.Decode(&data)
 	if err != nil {
 		log.Printf("Error decoding data: %s", err)	
 		helpers.ResponseHelper(w, 400, errorResponse{Error: err.Error()})
