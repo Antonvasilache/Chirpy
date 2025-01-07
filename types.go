@@ -35,6 +35,7 @@ type User struct {
 	Email     	 string    `json:"email"`
 	Token	  	 string	   `json:"token"`
 	RefreshToken string    `json:"refresh_token"`
+	IsChirpyRed	 bool	   `json:"is_chirpy_red"`
 }
 
 type ChirpResponse struct{
@@ -47,4 +48,13 @@ type ChirpResponse struct{
 
 type TokenResponse struct{
 	Token string `json:"token"`
+}
+
+type WebhookData struct {
+	UserID string `json:"user_id"`
+}
+
+type WebhookRequest struct {
+	Event string `json:"event"`
+	Data WebhookData `json:"data"`
 }

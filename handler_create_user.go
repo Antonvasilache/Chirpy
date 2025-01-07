@@ -50,6 +50,7 @@ func (cfg *apiConfig) createUserHandler(w http.ResponseWriter, r *http.Request){
 		CreatedAt: databaseUser.CreatedAt,
 		UpdatedAt: databaseUser.UpdatedAt,
 		Email: databaseUser.Email,
+		IsChirpyRed: databaseUser.IsChirpyRed,
 	}
 
 	helpers.ResponseHelper(w, 201, user)	

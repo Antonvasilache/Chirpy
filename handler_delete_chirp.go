@@ -17,6 +17,7 @@ func (cfg *apiConfig) deleteChirp(w http.ResponseWriter, r *http.Request){
 	chirpID, err := uuid.Parse(chirpIDstr)
 	if err != nil {
 		http.Error(w, "Invalid chirp ID format", http.StatusBadRequest)
+		return
 	}
 
 	//2. Get user ID from chirp ID
